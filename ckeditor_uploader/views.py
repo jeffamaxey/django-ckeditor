@@ -22,19 +22,15 @@ from .utils import is_valid_image_extension
 def _get_user_path(user):
     user_path = ""
 
-    # If CKEDITOR_RESTRICT_BY_USER is True upload file to user specific path.
-    RESTRICT_BY_USER = getattr(settings, "CKEDITOR_RESTRICT_BY_USER", False)
-    if RESTRICT_BY_USER:
+    if RESTRICT_BY_USER := getattr(
+        settings, "CKEDITOR_RESTRICT_BY_USER", False
+    ):
         try:
             user_prop = getattr(user, RESTRICT_BY_USER)
         except (AttributeError, TypeError):
             user_prop = getattr(user, "get_username")
 
-        if callable(user_prop):
-            user_path = user_prop()
-        else:
-            user_path = user_prop
-
+        user_path = user_prop() if callable(user_prop) else user_prop
     return str(user_path)
 
 
@@ -67,13 +63,11 @@ def get_upload_filename(upload_name, request):
                 inspect.signature(generator).bind(upload_name)
             except TypeError:
                 warnings.warn(
-                    "Update %s() to accept the arguments `filename, request`."
-                    % settings.CKEDITOR_FILENAME_GENERATOR
+                    f"Update {settings.CKEDITOR_FILENAME_GENERATOR}() to accept the arguments `filename, request`."
                 )
             else:
                 warnings.warn(
-                    "Update %s() to accept a second `request` argument."
-                    % settings.CKEDITOR_FILENAME_GENERATOR,
+                    f"Update {settings.CKEDITOR_FILENAME_GENERATOR}() to accept a second `request` argument.",
                     PendingDeprecationWarning,
                 )
                 upload_name = generator(upload_name)
@@ -127,10 +121,9 @@ class ImageUploadView(generic.View):
                     ck_func_num, url
                 )
             )
-        else:
-            _, filename = os.path.split(saved_path)
-            retdata = {"url": url, "uploaded": "1", "fileName": filename}
-            return JsonResponse(retdata)
+        _, filename = os.path.split(saved_path)
+        retdata = {"url": url, "uploaded": "1", "fileName": filename}
+        return JsonResponse(retdata)
 
 
 upload = csrf_exempt(ImageUploadView.as_view())
@@ -148,34 +141,24 @@ def get_image_files(user=None, path=""):
 
     # allow browsing from anywhere if user is superuser
     # otherwise use the user path
-    if user and not user.is_superuser:
-        user_path = _get_user_path(user)
-    else:
-        user_path = ""
-
+    user_path = _get_user_path(user) if user and not user.is_superuser else ""
     browse_path = os.path.join(settings.CKEDITOR_UPLOAD_PATH, user_path, path)
 
     try:
         storage_list = storage.listdir(browse_path)
-    except NotImplementedError:
+    except (NotImplementedError, OSError):
         return
-    except OSError:
-        return
-
     for filename in storage_list[STORAGE_FILES]:
         if os.path.splitext(filename)[0].endswith("_thumb") or os.path.basename(
             filename
         ).startswith("."):
             continue
-        filename = os.path.join(browse_path, filename)
-        yield filename
-
+        yield os.path.join(browse_path, filename)
     for directory in storage_list[STORAGE_DIRECTORIES]:
         if directory.startswith("."):
             continue
         directory_path = os.path.join(path, directory)
-        for element in get_image_files(user=user, path=directory_path):
-            yield element
+        yield from get_image_files(user=user, path=directory_path)
 
 
 def get_files_browse_urls(user=None):
@@ -193,7 +176,7 @@ def get_files_browse_urls(user=None):
                 thumb = utils.get_icon_filename(filename)
             visible_filename = os.path.split(filename)[1]
             if len(visible_filename) > 20:
-                visible_filename = visible_filename[0:19] + "..."
+                visible_filename = f"{visible_filename[:19]}..."
         else:
             thumb = src
             visible_filename = os.path.split(filename)[1]
@@ -222,7 +205,7 @@ def browse(request):
         form = SearchForm()
 
     show_dirs = getattr(settings, "CKEDITOR_BROWSE_SHOW_DIRS", False)
-    dir_list = sorted(set(os.path.dirname(f["src"]) for f in files), reverse=True)
+    dir_list = sorted({os.path.dirname(f["src"]) for f in files}, reverse=True)
 
     # Ensures there are no objects created from Thumbs.db files - ran across
     # this problem while developing on Windows

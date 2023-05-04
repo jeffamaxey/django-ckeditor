@@ -48,7 +48,7 @@ class TestAdminPanelWidget(StaticLiveServerTestCase):
         self._assert_image_uploaded()
 
     def _login_to_admin(self):
-        self.selenium.get("%s%s" % (self.live_server_url, "/admin/"))
+        self.selenium.get(f"{self.live_server_url}/admin/")
         username_input = self.selenium.find_element_by_name("username")
         username_input.send_keys("test")
         password_input = self.selenium.find_element_by_name("password")
@@ -57,7 +57,7 @@ class TestAdminPanelWidget(StaticLiveServerTestCase):
 
     def _go_to_demo_application_in_admin(self):
         self.selenium.get(
-            "%s%s" % (self.live_server_url, "/admin/demo_application/examplemodel/add/")
+            f"{self.live_server_url}/admin/demo_application/examplemodel/add/"
         )
 
     def _assert_editor_loaded(self):

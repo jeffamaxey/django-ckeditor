@@ -19,13 +19,9 @@ class RichTextUploadingFormField(forms.fields.CharField):
         *args,
         **kwargs
     ):
-        kwargs.update(
-            {
-                "widget": widgets.CKEditorUploadingWidget(
-                    config_name=config_name,
-                    extra_plugins=extra_plugins,
-                    external_plugin_resources=external_plugin_resources,
-                )
-            }
+        kwargs["widget"] = widgets.CKEditorUploadingWidget(
+            config_name=config_name,
+            extra_plugins=extra_plugins,
+            external_plugin_resources=external_plugin_resources,
         )
         super().__init__(*args, **kwargs)

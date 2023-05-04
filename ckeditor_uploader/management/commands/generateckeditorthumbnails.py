@@ -19,13 +19,11 @@ class Command(BaseCommand):
             backend = registry.get_backend()
             for image in get_image_files():
                 if not self._thumbnail_exists(image):
-                    self.stdout.write("Creating thumbnail for %s" % image)
+                    self.stdout.write(f"Creating thumbnail for {image}")
                     try:
                         backend.create_thumbnail(image)
                     except Exception as e:
-                        self.stdout.write(
-                            "Couldn't create thumbnail for %s: %s" % (image, e)
-                        )
+                        self.stdout.write(f"Couldn't create thumbnail for {image}: {e}")
             self.stdout.write("Finished")
         else:
             self.stdout.write("No thumbnail backend is enabled")

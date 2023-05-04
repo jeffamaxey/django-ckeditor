@@ -17,8 +17,7 @@ class RichTextField(models.TextField):
             "config_name": self.config_name,
             "extra_plugins": self.extra_plugins,
             "external_plugin_resources": self.external_plugin_resources,
-        }
-        defaults.update(kwargs)
+        } | kwargs
         return super().formfield(**defaults)
 
     @staticmethod
@@ -35,13 +34,9 @@ class RichTextFormField(forms.fields.CharField):
         *args,
         **kwargs
     ):
-        kwargs.update(
-            {
-                "widget": CKEditorWidget(
-                    config_name=config_name,
-                    extra_plugins=extra_plugins,
-                    external_plugin_resources=external_plugin_resources,
-                )
-            }
+        kwargs["widget"] = CKEditorWidget(
+            config_name=config_name,
+            extra_plugins=extra_plugins,
+            external_plugin_resources=external_plugin_resources,
         )
         super().__init__(*args, **kwargs)

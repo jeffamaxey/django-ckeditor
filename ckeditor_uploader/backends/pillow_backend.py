@@ -36,16 +36,14 @@ class PillowBackend:
 
     def save_as(self, filepath):
         if not self.is_image:
-            saved_path = self.storage_engine.save(filepath, self.file_object)
-            return saved_path
-
+            return self.storage_engine.save(filepath, self.file_object)
         image = Image.open(self.file_object)
 
         should_compress = getattr(settings, "CKEDITOR_FORCE_JPEG_COMPRESSION", False)
         is_animated = hasattr(image, "is_animated") and image.is_animated
         if should_compress and not is_animated:
             file_object = self._compress_image(image)
-            filepath = "{}.jpg".format(os.path.splitext(filepath)[0])
+            filepath = f"{os.path.splitext(filepath)[0]}.jpg"
             saved_path = self.storage_engine.save(filepath, file_object)
         else:
             file_object = self.file_object

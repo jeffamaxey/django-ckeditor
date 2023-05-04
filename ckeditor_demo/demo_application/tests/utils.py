@@ -39,4 +39,4 @@ def get_absolute_media_path(fname):
 
 
 def get_absolute_name(class_or_function):
-    return "%s.%s" % (class_or_function.__module__, class_or_function.__name__)
+    return f"{class_or_function.__module__}.{class_or_function.__name__}"
